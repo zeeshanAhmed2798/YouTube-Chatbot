@@ -52,6 +52,14 @@ def get_transcript(video_id: str) -> str:
     try:
         api = YouTubeTranscriptApi()
         transcript_list = api.list(video_id)
+        
+        # DEBUG: Show available languages
+        available_langs = []
+        for t in transcript_list:
+            lang_code = getattr(t, "language_code", getattr(t, "language", "unknown"))
+            available_langs.append(lang_code)
+        
+        print(f"🔍 Available languages for {video_id}: {available_langs}")
 
         hindi_fetched = None
         english_fetched = None
@@ -61,19 +69,23 @@ def get_transcript(video_id: str) -> str:
             lang_code = getattr(t, "language_code", getattr(t, "language", "unknown"))
             if lang_code == "hi":
                 hindi_fetched = t.fetch()
+                print("✅ Hindi transcript found")
             elif lang_code == "en":
                 english_transcript_obj = t
                 english_fetched = t.fetch()
+                print("✅ English transcript found")
 
         if hindi_fetched:
             transcript_text = " ".join([s.text for s in getattr(hindi_fetched, "snippets", hindi_fetched)])
+            print(f"📝 Hindi transcript length: {len(transcript_text)} characters")
             translated_transcript = translate_to_english(transcript_text)
             return translated_transcript
         elif english_fetched:
             transcript_text = " ".join([s.text for s in getattr(english_fetched, "snippets", english_fetched)])
+            print(f"📝 English transcript length: {len(transcript_text)} characters")
             return transcript_text
         else:
-            return "No Hindi or English transcript found."
+            return f"No Hindi or English transcript found. Available languages: {available_langs}"
 
     except (NoTranscriptFound, TranscriptsDisabled) as e:
         return f"Transcript error: {str(e)}"
