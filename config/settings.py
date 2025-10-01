@@ -9,10 +9,15 @@ def get_secret(key: str, default: str = None):
     """Get secret from Streamlit secrets or environment variable"""
     try:
         # Try Streamlit secrets first (for cloud deployment)
-        return st.secrets[key]
-    except:
+        secret_value = st.secrets[key]
+        print(f"✅ Loaded {key} from Streamlit secrets")
+        return secret_value
+    except Exception as e:
+        print(f"❌ Failed to load {key} from Streamlit secrets: {e}")
         # Fallback to environment variable (for local development)
-        return os.getenv(key, default)
+        env_value = os.getenv(key, default)
+        print(f"⚠️ Using {key} from environment: {env_value is not None}")
+        return env_value
 
 # Pinecone Configuration
 PINECONE_API_KEY = get_secret("PINECONE_API_KEY")
@@ -30,4 +35,6 @@ CHUNK_OVERLAP = int(get_secret("CHUNK_OVERLAP", "200"))
 GROQ_API_KEY = get_secret("GROQ_API_KEY")
 MODEL_NAME = get_secret("MODEL_NAME", "llama-3.1-8b-instant")
 
+print(f"[settings] PINECONE_API_KEY loaded: {PINECONE_API_KEY is not None}")
+print(f"[settings] GROQ_API_KEY loaded: {GROQ_API_KEY is not None}")
 print(f"[settings] index={INDEX_NAME}, region={PINECONE_REGION}, model={EMBEDDING_MODEL_NAME}")
