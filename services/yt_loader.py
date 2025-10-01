@@ -70,24 +70,38 @@ def get_transcript(video_id: str) -> str:
             lang_code = getattr(t, "language_code", getattr(t, "language", "unknown"))
             print(f"🔍 Processing language: {lang_code}")
             if lang_code == "hi":
-                hindi_fetched = t.fetch()
-                print("✅ Hindi transcript found")
+                try:
+                    hindi_fetched = t.fetch()
+                    print("✅ Hindi transcript found and fetched")
+                except Exception as e:
+                    print(f"❌ Error fetching Hindi transcript: {e}")
             elif lang_code == "en":
-                english_transcript_obj = t
-                english_fetched = t.fetch()
-                print("✅ English transcript found")
+                try:
+                    english_transcript_obj = t
+                    english_fetched = t.fetch()
+                    print("✅ English transcript found and fetched")
+                except Exception as e:
+                    print(f"❌ Error fetching English transcript: {e}")
 
         if hindi_fetched:
             transcript_text = " ".join([s.text for s in getattr(hindi_fetched, "snippets", hindi_fetched)])
             print(f"📝 Hindi transcript length: {len(transcript_text)} characters")
-            print(f"📝 Hindi sample: {transcript_text[:100]}...")
-            translated_transcript = translate_to_english(transcript_text)
-            print(f"📝 Translated length: {len(translated_transcript)} characters")
-            return translated_transcript
+            print(f"📝 Hindi sample: {transcript_text[:200]}...")
+            
+            # Try translation
+            try:
+                translated_transcript = translate_to_english(transcript_text)
+                print(f"📝 Translated length: {len(translated_transcript)} characters")
+                print(f"📝 Translated sample: {translated_transcript[:200]}...")
+                return translated_transcript
+            except Exception as e:
+                print(f"❌ Translation error: {e}")
+                return transcript_text  # Return original if translation fails
+                
         elif english_fetched:
             transcript_text = " ".join([s.text for s in getattr(english_fetched, "snippets", english_fetched)])
             print(f"📝 English transcript length: {len(transcript_text)} characters")
-            print(f"📝 English sample: {transcript_text[:100]}...")
+            print(f"📝 English sample: {transcript_text[:200]}...")
             return transcript_text
         else:
             print(f"❌ No Hindi or English transcript found. Available: {available_langs}")
