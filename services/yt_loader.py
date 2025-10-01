@@ -50,6 +50,7 @@ def translate_to_english(text: str) -> str:
 def get_transcript(video_id: str) -> str:
     """Get YouTube transcript with translation to English"""
     try:
+        print(f"🔍 Fetching transcript for video: {video_id}")
         api = YouTubeTranscriptApi()
         transcript_list = api.list(video_id)
         
@@ -67,6 +68,7 @@ def get_transcript(video_id: str) -> str:
 
         for t in transcript_list:
             lang_code = getattr(t, "language_code", getattr(t, "language", "unknown"))
+            print(f"🔍 Processing language: {lang_code}")
             if lang_code == "hi":
                 hindi_fetched = t.fetch()
                 print("✅ Hindi transcript found")
@@ -78,16 +80,22 @@ def get_transcript(video_id: str) -> str:
         if hindi_fetched:
             transcript_text = " ".join([s.text for s in getattr(hindi_fetched, "snippets", hindi_fetched)])
             print(f"📝 Hindi transcript length: {len(transcript_text)} characters")
+            print(f"📝 Hindi sample: {transcript_text[:100]}...")
             translated_transcript = translate_to_english(transcript_text)
+            print(f"📝 Translated length: {len(translated_transcript)} characters")
             return translated_transcript
         elif english_fetched:
             transcript_text = " ".join([s.text for s in getattr(english_fetched, "snippets", english_fetched)])
             print(f"📝 English transcript length: {len(transcript_text)} characters")
+            print(f"📝 English sample: {transcript_text[:100]}...")
             return transcript_text
         else:
+            print(f"❌ No Hindi or English transcript found. Available: {available_langs}")
             return f"No Hindi or English transcript found. Available languages: {available_langs}"
 
     except (NoTranscriptFound, TranscriptsDisabled) as e:
+        print(f"❌ Transcript error: {str(e)}")
         return f"Transcript error: {str(e)}"
     except Exception as e:
+        print(f"❌ Error fetching transcript: {str(e)}")
         return f"Error fetching transcript: {str(e)}"
