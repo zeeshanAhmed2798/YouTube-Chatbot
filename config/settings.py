@@ -5,11 +5,13 @@ from dotenv import load_dotenv
 # Load .env file for local development
 load_dotenv()
 
-# Try to get from Streamlit secrets first, then .env
 def get_secret(key: str, default: str = None):
+    """Get secret from Streamlit secrets or environment variable"""
     try:
+        # Try Streamlit secrets first (for cloud deployment)
         return st.secrets[key]
     except:
+        # Fallback to environment variable (for local development)
         return os.getenv(key, default)
 
 # Pinecone Configuration
