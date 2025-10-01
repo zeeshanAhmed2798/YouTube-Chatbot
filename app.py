@@ -57,13 +57,8 @@ if video_url and not st.session_state.video_processed:
                 # Create chunks
                 chunks = make_chunks(transcript)
                 
-                # Create embeddings
-                embeddings = get_embedder()
-                vectors = embed_chunks(embeddings, chunks)
-                
-                # Prepare metadata
-                metas = [{"video_id": video_id, "chunk_id": i} for i in range(len(chunks))]
-                texts = [chunk.page_content for chunk in chunks]
+                # Create embeddings (FIXED: correct function call)
+                texts, vectors, metas = embed_chunks(chunks, video_id)
                 
                 # Store in Pinecone
                 index = get_or_create_index(dim=384)
