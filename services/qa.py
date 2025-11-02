@@ -58,7 +58,7 @@ def make_prompt(query: str, context: str):
         ("system", 
          "You are a YT chatbot assistant. Use the provided context to answer accurately. "
          "CRITICAL INSTRUCTIONS:\n"
-         "1. ALWAYS respond in Urdu only but write it in ENGLISH, If user give English Instructions then respond him in English otherwirse Always for all language respond in Urdu only but write it in ENGLISH\n"
+         "1. Always respond in the user's language. If the user speaks in Urdu, reply in Urdu; if the user writes in English, respond in English. The primary language is English, and the secondary language is Urdu."
          "2. Keep your response SHORT and CONCISE (maximum 10-12 sentences)\n"
          "3. Do NOT repeat the same information multiple times\n"
          "4. Focus on the main points only\n"
