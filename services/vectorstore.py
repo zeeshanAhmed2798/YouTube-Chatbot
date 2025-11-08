@@ -1,5 +1,5 @@
 import time
-from pinecone import Pinecone
+from pinecone import Pinecone, ServerlessSpec
 from config import settings
 from itertools import islice
 from typing import Iterable
@@ -26,37 +26,19 @@ def batched(iterable: Iterable, n: int = 100):
         yield batch
 
 def get_or_create_index(dim: int):
-    """Get existing index or create new one"""
-    global _index
-    pc = get_pinecone_client()
-    
-    # Check if index exists
-    existing = [i.name for i in pc.list_indexes()]
-    
-    if settings.INDEX_NAME in existing:
-        # Index exists, just get it (reuse existing)
-        _index = pc.Index(settings.INDEX_NAME)
-        return _index
-    else:
-        # Create new index only if it doesn't exist
+    pc = Pinecone(api_key=settings.PINECONE_API_KEY)
+    index_name = settings.PINECONE_INDEX_NAME
+
+    # check if exists
+    if index_name not in [i["name"] for i in pc.list_indexes()]:
         pc.create_index(
-            name=settings.INDEX_NAME,
+            name=index_name,
             dimension=dim,
             metric="cosine",
-            spec={
-                "serverless": {
-                    "cloud": settings.PINECONE_CLOUD,
-                    "region": settings.PINECONE_REGION
-                }
-            }
+            spec=ServerlessSpec(cloud=settings.PINECONE_CLOUD, region=settings.PINECONE_REGION)
         )
-        
-        # Wait for index to be ready
-        while not pc.describe_index(settings.INDEX_NAME).status["ready"]:
-            time.sleep(1)
-        
-        _index = pc.Index(settings.INDEX_NAME)
-        return _index
+
+    return pc.Index(index_name)
 
 def clear_vectors(index):
     """Clear all vectors from the index"""
